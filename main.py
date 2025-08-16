@@ -56,14 +56,14 @@ st.markdown("""
             padding: 12px;
             margin-bottom: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            color: #1a1a1a; /* Set a dark color for text */
+            color: #000; /* Set a dark color for text */
         }
         .chat-message.user {
             background-color: #e6f3ff;
             border: 1px solid #b3d9ff;
         }
         .chat-message.assistant {
-            background-color: #f7f9fa;
+            background-color: #e6f3ff;
             border: 1px solid #e0e6ed;
         }
         .st-emotion-cache-1cypcdb { /* Streamlit header padding */
@@ -194,3 +194,4 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
+
