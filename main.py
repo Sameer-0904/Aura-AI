@@ -76,6 +76,9 @@ st.markdown("""
         .st-emotion-cache-163v2p5 { /* This targets the text in the chat input */
             color: #1a1a1a;
         }
+        .st-emotion-cache-1vb5141 { /* This targets the chat input text and placeholder */
+            color: #1a1a1a;
+        }
     </style>
 """, unsafe_allow_html=True)
 
