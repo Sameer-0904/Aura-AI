@@ -25,7 +25,10 @@ st.markdown("""
             font-family: 'Segoe UI', sans-serif;
         }
         .sidebar .sidebar-content {
-            background-color: #ffffff; /* White sidebar */
+            background-color: #ffffff; /* Use a clean white background */
+        }
+        .st-emotion-cache-1v3l74s { /* Targeting the sidebar text element */
+            color: #1a1a1a;
         }
         h1, .st-emotion-cache-1v0mbdj {
             color: #1a1a1a; /* Darker title color */
@@ -53,6 +56,7 @@ st.markdown("""
             padding: 12px;
             margin-bottom: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #1a1a1a; /* Set a dark color for text */
         }
         .chat-message.user {
             background-color: #e6f3ff;
@@ -180,3 +184,4 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
+
