@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)  
 [![Gemini](https://img.shields.io/badge/Google-Gemini%202.5%20Flash-red?logo=google)](https://ai.google.dev/)  
-[![Stars](https://img.shields.io/github/stars/Sameer-0904/Basic-LLM?style=social)](https://github.com/Sameer-0904/Basic-LLM/stargazers)  
+[![Stars](https://img.shields.io/github/stars/Sameer-0904/Aura-AI?style=social)](https://github.com/Sameer-0904/Aura-AI/stargazers)  
 
 > 🚀 An AI-powered application built with **Google Gemini 2.5 Flash**, featuring:  
 > 💬 Chatbot • 🖼️ Image Captioning • 🔎 Text Embeddings • ❓ Ask Me Anything  
