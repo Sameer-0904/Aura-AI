@@ -38,15 +38,15 @@ st.set_page_config(
     layout="wide"
 )
 
-# Sidebar with logo and menu
+# Sidebar with menu
 with st.sidebar:
-    st.title("🧠 Aura AI")
+    st.markdown("<div style='text-align: center;'><h1>🧠 Aura AI</h1></div>", unsafe_allow_html=True)
     selected = option_menu("Navigation",
                            ["ChatBot", "Image Captioning", "Embed Text", "Ask me Anything"],
                            menu_icon='robot', icons=['chat-left','card-image','card-text','question-circle'],
                            default_index=0)
     st.markdown("---")
-    st.caption("Your Personal LLM Assistant")
+    st.markdown("<div style='text-align: center;'><span style='font-size: 16px; color: gray;'>Your Personal LLM Assistant</span></div>", unsafe_allow_html=True)
 
 # Function to translate role between gemini-pro & streamlit terminology
 def translate_role_for_streamlit(user_role):
@@ -112,3 +112,4 @@ elif selected == "Ask me Anything":
             st.markdown(response)
         else:
             st.warning("Please enter a question.")
+
