@@ -9,109 +9,106 @@ from gemini_utility import (load_gemini_pro_model,
                             embedding_model_response,
                             aura_response)
 
-# Get the Working directory
-working_directory = os.path.dirname(os.path.abspath(__file__))
+# Set custom Streamlit theme via st.markdown (for background, fonts, etc.)
+st.markdown("""
+    <style>
+        body {
+            background: linear-gradient(120deg, #e0eafc, #cfdef3);
+        }
+        .stApp {
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .sidebar .sidebar-content {
+            background-color: #f0f5ff;
+        }
+        .css-1v0mbdj {  /* Title style */
+            color: #4636e3 !important;
+        }
+        .chat-message {
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 4px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# Setting up the page config
 st.set_page_config(
     page_title="Aura AI",
     page_icon="🧠",
-    layout="centered"
+    layout="wide"
 )
 
+# Sidebar with logo and menu
 with st.sidebar:
-    selected = option_menu("Aura AI",
-                           ["ChatBot",
-                            "Image Captioning",
-                            "Embed Text",
-                            "Ask me Anything"],
+    st.title("🧠 Aura AI")
+    selected = option_menu("Navigation",
+                           ["ChatBot", "Image Captioning", "Embed Text", "Ask me Anything"],
                            menu_icon='robot', icons=['chat-left','card-image','card-text','question-circle'],
                            default_index=0)
+    st.markdown("---")
+    st.caption("Your Personal LLM Assistant")
 
 # Function to translate role between gemini-pro & streamlit terminology
 def translate_role_for_streamlit(user_role):
-    if user_role == "model":
-        return  "assistant"
-    else:
-        return user_role
-#_________________________________________________________________________________
+    return "assistant" if user_role == "model" else user_role
 
 # ChatBot Page
 if selected == "ChatBot":
     model = load_gemini_pro_model()
-
-    # Initialize chat session in streamlit if not present
     if "chat_session" not in st.session_state:
         st.session_state.chat_session = model.start_chat(history=[])
+    st.title("🤖 Aura AI ChatBot")
+    st.write("Chat with Aura AI, your intelligent assistant powered by Gemini LLM.")
 
-    # Streamlit page title
-    st.title("🤖 ChatBot")
-
-    # Display the Chat History
     for message in st.session_state.chat_session.history:
         with st.chat_message(translate_role_for_streamlit(message.role)):
             st.markdown(message.parts[0].text)
-
-    # Input field for user's message
     user_prompt = st.chat_input("Ask Aura...")
-
     if user_prompt:
         st.chat_message("user").markdown(user_prompt)
-
-        aura_response = st.session_state.chat_session.send_message(user_prompt)
-
-        # Get Aura's response
+        with st.spinner("Thinking..."):
+            aura_response = st.session_state.chat_session.send_message(user_prompt)
         with st.chat_message("assistant"):
             st.markdown(aura_response.text)
 
-#_______________________________________________________________________________________
-
 # Image Captioning Page
-if selected == "Image Captioning":
-    # streamlit page title
-    st.title("Picture Perfect Captions ✨📷")
-
-    uploaded_image = st.file_uploader("Upload an Images...", type=["jpg","jpeg","png"])
-
-    if st.button("Generate Caption"):
+elif selected == "Image Captioning":
+    st.title("✨ Picture Perfect Captions")
+    st.write("Upload an image and Aura AI will generate a creative caption.")
+    uploaded_image = st.file_uploader("Upload an image...", type=["jpg","jpeg","png"], help="Supported formats: jpg, jpeg, png")
+    if uploaded_image:
         image = Image.open(uploaded_image)
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            resized_image = image.resize((800, 500))
-            st.image(resized_image)
-
-        default_prompt = "Write a Short Caption for this image"
-
-        # Getting the response from vision model
-        caption = aura_vision_response(default_prompt, image)
-
-        with col2:
-            st.info(caption)
-
-#____________________________________________________________________________________________
+        st.image(image.resize((800, 500)), caption="Uploaded Image", use_column_width=True)
+        if st.button("Generate Caption"):
+            with st.spinner("Generating caption..."):
+                default_prompt = "Write a Short Caption for this image"
+                caption = aura_vision_response(default_prompt, image)
+            st.success("✨ Caption: " + caption)
+    else:
+        st.info("Please upload an image to continue.")
 
 # Text Embedding Page
-if selected == "Embed Text":
-    st.title("🔠 Embed Text")
-
-    # Input text box
-    input_text = st.text_area(label="", placeholder="Enter the text to get the Embeddings...")
-
+elif selected == "Embed Text":
+    st.title("🔠 Text Embedding")
+    st.write("Enter text to get its LLM embedding vector.")
+    input_text = st.text_area("Text to embed", placeholder="Enter your text here...", help="Paste any text for embedding")
     if st.button("Get Embeddings"):
-        response = embedding_model_response(input_text)
-        st.markdown(response)
-
-#____________________________________________________________________________________________
+        if input_text.strip():
+            with st.spinner("Generating embedding..."):
+                response = embedding_model_response(input_text)
+            st.code(response, language="json")
+        else:
+            st.warning("Please enter some text.")
 
 # Question-Answering Page
-if selected == "Ask me Anything":
-    st.title("❓ Ask me a Question")
-
-    # Text box to enter prompt
-    user_prompt = st.text_area(label="", placeholder="Ask Aura...")
-
+elif selected == "Ask me Anything":
+    st.title("❓ Ask Aura Anything")
+    st.write("Type your question and get an intelligent answer instantly.")
+    user_prompt = st.text_area("Your question", placeholder="Ask Aura...", help="Type any question for Aura AI")
     if st.button("Get an Answer"):
-        response = aura_response(user_prompt)
-        st.markdown(response)
+        if user_prompt.strip():
+            with st.spinner("Thinking..."):
+                response = aura_response(user_prompt)
+            st.markdown(response)
+        else:
+            st.warning("Please enter a question.")
