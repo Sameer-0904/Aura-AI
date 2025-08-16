@@ -3,14 +3,8 @@ import json
 
 import google.generativeai as genai
 
-# Get the Working directory
-working_directory = os.path.dirname(os.path.abspath(__file__))
-
-config_file_path = f"{working_directory}/config.json"
-config_data = json.load(open(config_file_path))
-
-# Loading the api key
-GOOGLE_API_KEY = config_data["GOOGLE_API_KEY"]
+# Loading the api key securely from Streamlit secrets
+GOOGLE_API_KEY = st.secrets["GEMINI_API_KEY"]
 
 # Configuring GenAI with api key
 genai.configure(api_key=GOOGLE_API_KEY)
@@ -41,4 +35,5 @@ def aura_response(user_prompt):
     gemini_pro_model = genai.GenerativeModel("gemini-2.5-flash")
     response = gemini_pro_model.generate_content(user_prompt)
     result = response.text
+
     return result
