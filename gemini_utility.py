@@ -1,6 +1,6 @@
 import os
 import json
-
+import streamlit as st
 import google.generativeai as genai
 
 # Loading the api key securely from Streamlit secrets
@@ -37,3 +37,4 @@ def aura_response(user_prompt):
     result = response.text
 
     return result
+
