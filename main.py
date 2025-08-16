@@ -21,93 +21,60 @@ st.set_page_config(
 # Improved CSS for better text visibility and contrast
 st.markdown("""
     <style>
-        /* App background and font */
         .stApp {
-            background-color: #f7f9fc !important; /* Even lighter background */
+            background-color: #f7f9fc !important;
             font-family: 'Segoe UI', sans-serif !important;
             color: #191919 !important;
         }
         /* Sidebar styles */
-        .st-emotion-cache-6qob1r { /* Streamlit sidebar container */
-            background-color: #ffffff !important;
-            color: #191919 !important;
+        .st-emotion-cache-6qob1r, .sidebar .sidebar-content {
+            background-color: #21212b !important;
+            color: #b4aaff !important;
         }
-        .sidebar .sidebar-content,
-        .st-emotion-cache-1v3l74s,
-        .st-emotion-cache-19r633d {
-            background-color: #ffffff !important;
-            color: #191919 !important;
-        }
-        /* Sidebar title */
         .sidebar-title {
-            color: #4B0082 !important;
+            color: #b74cff !important;
             font-weight: bold !important;
             font-size: 28px !important;
             text-align: center !important;
-            margin-bottom: 0.5em !important;
-        }
-        /* Navigation menu */
-        .st-emotion-cache-1cypcdb,
-        .st-emotion-cache-19r633d {
-            color: #1a1a1a !important;
         }
         /* Main title */
         h1, .st-emotion-cache-1v0mbdj {
-            color: #4B0082 !important; /* More visible and on-brand */
+            color: #4B0082 !important;
             font-weight: 700 !important;
             text-align: center !important;
         }
-        /* Subtitles and section headers */
-        h2, h3, h4, h5, h6 {
-            color: #191919 !important;
-            font-weight: 600 !important;
-        }
-        /* Chat message box improvements */
-        .chat-message {
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-            color: #191919 !important;
-            background-color: #e9effa !important;
-        }
+        /* Chat bubbles */
         .chat-message.user {
-            background-color: #d1ecff !important;
-            border: 1px solid #9ad1ff !important;
+            background-color: #8e8e95 !important;
+            border: none !important;
+            color: #fff !important;
         }
         .chat-message.assistant {
-            background-color: #f0f2f6 !important;
-            border: 1px solid #d7dde6 !important;
+            background-color: #23232a !important;
+            border: none !important;
+            color: #fff !important;
         }
-        /* Buttons */
+        /* Chat input area */
+        .st-emotion-cache-163v2p5 textarea, .st-emotion-cache-1vb5141 textarea, .stChatInput textarea {
+            background: #23232a !important;
+            color: #fff !important;
+            border: 2px solid #b74cff !important;
+            border-radius: 24px !important;
+            font-size: 18px !important;
+        }
+        .st-emotion-cache-1vb5141 textarea::placeholder, .st-emotion-cache-163v2p5 textarea::placeholder, .stChatInput textarea::placeholder {
+            color: #cccccc !important;
+            opacity: 1 !important;
+        }
+        /* Button color tweaks */
         .stButton>button {
             border: 1px solid #4B0082;
             color: #4B0082 !important;
-            background-color: #ffffff !important;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 17px;
-            font-weight: bold;
-            transition: all 0.2s ease-in-out;
+            background-color: #fff !important;
         }
         .stButton>button:hover {
             background-color: #4B0082 !important;
-            color: #ffffff !important;
-        }
-        /* Text areas/input */
-        textarea, input, .st-emotion-cache-163v2p5, .st-emotion-cache-1vb5141 {
-            color: #191919 !important;
-            background-color: #fff !important;
-        }
-        /* Info/warning/success boxes */
-        .stAlert {
-            color: #191919 !important;
-            background-color: #f0f2f6 !important;
-        }
-        /* Caption text */
-        .caption-text {
-            color: #4B0082 !important;
-            font-weight: 600 !important;
+            color: #fff !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -221,3 +188,4 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #4B0082; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
+
