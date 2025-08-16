@@ -78,7 +78,7 @@ elif selected == "Image Captioning":
     uploaded_image = st.file_uploader("Upload an image...", type=["jpg","jpeg","png"], help="Supported formats: jpg, jpeg, png")
     if uploaded_image:
         image = Image.open(uploaded_image)
-        st.image(image.resize((800, 500)), caption="Uploaded Image", use_container_width=True)
+        st.image(image.resize((200,200)), caption="Uploaded Image", use_container_width=True)
         if st.button("Generate Caption"):
             with st.spinner("Generating caption..."):
                 default_prompt = "Write a Short Caption for this image"
@@ -112,4 +112,5 @@ elif selected == "Ask me Anything":
             st.markdown(response)
         else:
             st.warning("Please enter a question.")
+
 
