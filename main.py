@@ -1,3 +1,4 @@
+
 import os
 import time
 
@@ -12,79 +13,108 @@ from gemini_utility import (load_gemini_pro_model,
 
 # --- App Configuration ---
 st.set_page_config(
-    page_title="Aura AI",
+    page_title="Aura AI - Your Personal Assistant",
     page_icon="🧠",
     layout="wide"
 )
 
-# Custom CSS for a modern, clean UI
+# Improved CSS for better text visibility and contrast
 st.markdown("""
     <style>
+        /* App background and font */
         .stApp {
-            background-color: #eef2f8; /* Lighter blue-gray background for better contrast */
-            font-family: 'Segoe UI', sans-serif;
+            background-color: #f7f9fc !important; /* Even lighter background */
+            font-family: 'Segoe UI', sans-serif !important;
+            color: #191919 !important;
         }
-        .sidebar .sidebar-content {
-            background-color: #ffffff; /* Use a clean white background */
+        /* Sidebar styles */
+        .st-emotion-cache-6qob1r { /* Streamlit sidebar container */
+            background-color: #ffffff !important;
+            color: #191919 !important;
         }
-        .st-emotion-cache-1v3l74s { /* Targeting the sidebar text element */
-            color: #1a1a1a;
+        .sidebar .sidebar-content,
+        .st-emotion-cache-1v3l74s,
+        .st-emotion-cache-19r633d {
+            background-color: #ffffff !important;
+            color: #191919 !important;
         }
+        /* Sidebar title */
+        .sidebar-title {
+            color: #4B0082 !important;
+            font-weight: bold !important;
+            font-size: 28px !important;
+            text-align: center !important;
+            margin-bottom: 0.5em !important;
+        }
+        /* Navigation menu */
+        .st-emotion-cache-1cypcdb,
+        .st-emotion-cache-19r633d {
+            color: #1a1a1a !important;
+        }
+        /* Main title */
         h1, .st-emotion-cache-1v0mbdj {
-            color: #1a1a1a; /* Darker title color */
-            font-weight: 600;
+            color: #4B0082 !important; /* More visible and on-brand */
+            font-weight: 700 !important;
+            text-align: center !important;
         }
-        .st-emotion-cache-1v0mbdj {
-            text-align: center;
+        /* Subtitles and section headers */
+        h2, h3, h4, h5, h6 {
+            color: #191919 !important;
+            font-weight: 600 !important;
         }
-        .stButton>button {
-            border: 1px solid #4B0082;
-            color: #4B0082;
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.2s ease-in-out;
-        }
-        .stButton>button:hover {
-            background-color: #4B0082;
-            color: white;
-        }
+        /* Chat message box improvements */
         .chat-message {
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            color: #000; /* Set a dark color for text */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            color: #191919 !important;
+            background-color: #e9effa !important;
         }
         .chat-message.user {
-            background-color: #e6f3ff;
-            border: 1px solid #b3d9ff;
+            background-color: #d1ecff !important;
+            border: 1px solid #9ad1ff !important;
         }
         .chat-message.assistant {
-            background-color: #e6f3ff;
-            border: 1px solid #e0e6ed;
+            background-color: #f0f2f6 !important;
+            border: 1px solid #d7dde6 !important;
         }
-        .st-emotion-cache-1cypcdb { /* Streamlit header padding */
-            padding-top: 1rem;
+        /* Buttons */
+        .stButton>button {
+            border: 1px solid #4B0082;
+            color: #4B0082 !important;
+            background-color: #ffffff !important;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 17px;
+            font-weight: bold;
+            transition: all 0.2s ease-in-out;
         }
-        /* New styles to fix text visibility */
-        .st-emotion-cache-19r633d { /* This targets the nav-link text */
-            color: #1a1a1a;
+        .stButton>button:hover {
+            background-color: #4B0082 !important;
+            color: #ffffff !important;
         }
-        .st-emotion-cache-163v2p5 { /* This targets the text in the chat input */
-            color: #1a1a1a;
+        /* Text areas/input */
+        textarea, input, .st-emotion-cache-163v2p5, .st-emotion-cache-1vb5141 {
+            color: #191919 !important;
+            background-color: #fff !important;
         }
-        .st-emotion-cache-1vb5141 { /* This targets the chat input text and placeholder */
-            color: #1a1a1a;
+        /* Info/warning/success boxes */
+        .stAlert {
+            color: #191919 !important;
+            background-color: #f0f2f6 !important;
+        }
+        /* Caption text */
+        .caption-text {
+            color: #4B0082 !important;
+            font-weight: 600 !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
 # --- Sidebar Navigation Menu ---
 with st.sidebar:
-    st.markdown("<h1 style='text-align: center;'>🧠 Aura AI</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='sidebar-title'>🧠 Aura AI</h1>", unsafe_allow_html=True)
     selected = option_menu("Navigation",
                            ["ChatBot", "Image Captioning", "Embed Text", "Ask me Anything"],
                            menu_icon='robot',
@@ -93,21 +123,20 @@ with st.sidebar:
                            styles={
                                "container": {"padding": "0!important", "background-color": "#ffffff"},
                                "icon": {"color": "#4B0082", "font-size": "20px"},
-                               "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px", "--hover-color": "#f0f2f6", "color": "#1a1a1a"},
-                               "nav-link-selected": {"background-color": "#f0f2f6", "font-weight": "bold", "color": "#4B0082"},
+                               "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px", "--hover-color": "#f0f2f6", "color": "#191919"},
+                               "nav-link-selected": {"background-color": "#e9effa", "font-weight": "bold", "color": "#4B0082"},
                            })
     st.markdown("---")
-    st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Your Personal LLM Assistant</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #4B0082; font-size: 15px;'>Your Personal LLM Assistant</p>", unsafe_allow_html=True)
 
 # --- Helper Function for Chat UI ---
 def translate_role_for_streamlit(user_role):
     return "assistant" if user_role == "model" else "user"
 
 # --- Main Page Content ---
-
 if selected == "ChatBot":
     st.title("🤖 Aura AI ChatBot")
-    st.write("Start a conversation with Aura AI, your intelligent assistant.")
+    st.markdown("<h3 style='color:#191919;'>Start a conversation with Aura AI, your intelligent assistant.</h3>", unsafe_allow_html=True)
 
     model = load_gemini_pro_model()
     if "chat_session" not in st.session_state:
@@ -122,16 +151,14 @@ if selected == "ChatBot":
     user_prompt = st.chat_input("Ask Aura a question...")
     if user_prompt:
         st.chat_message("user").markdown(user_prompt)
-        
         with st.spinner("Aura is thinking..."):
             aura_response = st.session_state.chat_session.send_message(user_prompt)
-            
         with st.chat_message("assistant"):
             st.markdown(aura_response.text)
 
 elif selected == "Image Captioning":
     st.title("🖼️ Image Captioning")
-    st.write("Upload an image, and Aura AI will generate a creative caption for you.")
+    st.markdown("<h3 style='color:#191919;'>Upload an image, and Aura AI will generate a creative caption for you.</h3>", unsafe_allow_html=True)
 
     col1, col2 = st.columns([1, 1])
 
@@ -151,11 +178,11 @@ elif selected == "Image Captioning":
                     caption = aura_vision_response(default_prompt, image)
                     time.sleep(1) # Simulate a slight delay for better UX
                 st.success("Caption generated!")
-                st.markdown(f"**✨ Caption:** `{caption}`")
+                st.markdown(f"<span class='caption-text'>✨ Caption:</span> `{caption}`", unsafe_allow_html=True)
 
 elif selected == "Embed Text":
     st.title("🔤 Text Embedding")
-    st.write("Enter any text below to get its embedding vector from a large language model.")
+    st.markdown("<h3 style='color:#191919;'>Enter any text below to get its embedding vector from a large language model.</h3>", unsafe_allow_html=True)
 
     col1, col2 = st.columns([2, 1])
 
@@ -176,7 +203,7 @@ elif selected == "Embed Text":
 
 elif selected == "Ask me Anything":
     st.title("❓ Ask Aura Anything")
-    st.write("Type your question and get an intelligent answer instantly from Aura AI.")
+    st.markdown("<h3 style='color:#191919;'>Type your question and get an intelligent answer instantly from Aura AI.</h3>", unsafe_allow_html=True)
 
     user_prompt = st.text_area("Your question", placeholder="Type your question here...", help="Type any question for Aura AI", height=150)
     
@@ -193,5 +220,4 @@ elif selected == "Ask me Anything":
 # --- Text at the bottom of every page ---
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
-st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
-
+st.markdown("<p style='text-align: center; color: #4B0082; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
