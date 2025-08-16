@@ -21,7 +21,7 @@ st.set_page_config(
 st.markdown("""
     <style>
         .stApp {
-            background-color: #f0f2f6; /* Light gray background */
+            background-color: #eef2f8; /* Lighter blue-gray background for better contrast */
             font-family: 'Segoe UI', sans-serif;
         }
         .sidebar .sidebar-content {
@@ -69,6 +69,13 @@ st.markdown("""
         .st-emotion-cache-1cypcdb { /* Streamlit header padding */
             padding-top: 1rem;
         }
+        /* New styles to fix text visibility */
+        .st-emotion-cache-19r633d { /* This targets the nav-link text */
+            color: #1a1a1a;
+        }
+        .st-emotion-cache-163v2p5 { /* This targets the text in the chat input */
+            color: #1a1a1a;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -83,7 +90,7 @@ with st.sidebar:
                            styles={
                                "container": {"padding": "0!important", "background-color": "#ffffff"},
                                "icon": {"color": "#4B0082", "font-size": "20px"},
-                               "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px", "--hover-color": "#f0f2f6"},
+                               "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px", "--hover-color": "#f0f2f6", "color": "#1a1a1a"},
                                "nav-link-selected": {"background-color": "#f0f2f6", "font-weight": "bold", "color": "#4B0082"},
                            })
     st.markdown("---")
@@ -184,4 +191,3 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
-
