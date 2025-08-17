@@ -114,4 +114,7 @@ elif selected == "Ask me Anything":
             st.warning("Please enter a question.")
 
 
-
+# --- Text at the bottom of every page ---
+st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
+st.markdown("---")
+st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
