@@ -58,7 +58,7 @@ if selected == "ChatBot":
     if "chat_session" not in st.session_state:
         st.session_state.chat_session = model.start_chat(history=[])
     st.title("🤖 Aura AI ChatBot")
-    st.write("Chat with Aura AI, your intelligent assistant powered by Gemini LLM.")
+    st.write("Chat with Aura AI, your intelligent Assistant.")
 
     for message in st.session_state.chat_session.history:
         with st.chat_message(translate_role_for_streamlit(message.role)):
