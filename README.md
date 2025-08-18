@@ -21,18 +21,9 @@ The app is lightweight, modular, and can be extended into a **full-scale AI assi
 ✅ **Chatbot** — Human-like conversations with context.  
 ✅ **Image Captioning** — Describe images using Gemini’s multimodal capabilities.  
 ✅ **Text Embeddings** — Generate embeddings for search, similarity, and clustering.  
-✅ **Ask Me Anything (AMA)** — Open-domain Q&A with accurate responses.  
+✅ **Ask Me Anything (AMA)** — Open-domain Q&A with accurate responses.
+✅ **Recent Conversations Section** — Now you can see your last 10 chats.
 ✅ **Easy Deployment** — Run locally or deploy on Streamlit Cloud.  
-
----
-
-## 🛠️ Tech Stack
-- **Programming Language**: Python 3.10+  
-- **Model**: [Gemini 2.5 Flash](https://ai.google.dev/)  
-- **Frameworks**: Streamlit  
-- **Libraries**: `google-generativeai`, `PIL`, `numpy`, 
-
----
 
 ---
 
@@ -47,5 +38,16 @@ The app automatically stores the **last 10 messages** in each session, so you ca
 - ⏪ Lets you refer back to previous questions/answers  
 
 > Currently, the history is stored in-memory (session-based). Future updates may include saving history to a database for long-term memory.
+
+---
+
+## 🛠️ Tech Stack
+- **Programming Language**: Python 3.10+  
+- **Model**: [Gemini 2.5 Flash](https://ai.google.dev/)  
+- **Frameworks**: Streamlit  
+- **Libraries**: `google-generativeai`, `PIL`, `numpy`, `sqlite`
+
+---
+
 
 ---
