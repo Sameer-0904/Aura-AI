@@ -2,3 +2,4 @@ google-generativeai
 pillow
 streamlit
 streamlit-option-menu
+streamlit-cookies-manager
