@@ -1,16 +1,13 @@
 import os
 import json
+import streamlit as st # <-- New import
 
 import google.generativeai as genai
 
-# Get the Working directory
-working_directory = os.path.dirname(os.path.abspath(__file__))
+# No longer need working_directory, config_file_path, or json.load
 
-config_file_path = f"{working_directory}/config.json"
-config_data = json.load(open(config_file_path))
-
-# Loading the api key
-GOOGLE_API_KEY = config_data["GOOGLE_API_KEY"]
+# Loading the api key securely from Streamlit secrets
+GOOGLE_API_KEY = st.secrets["GEMINI_API_KEY"]
 
 # Configuring GenAI with api key
 genai.configure(api_key=GOOGLE_API_KEY)
@@ -42,10 +39,3 @@ def aura_response(user_prompt):
     response = gemini_pro_model.generate_content(user_prompt)
     result = response.text
     return result
-
-# Function to generate a title using the Gemini model
-def generate_title(text):
-    gemini_model = genai.GenerativeModel("gemini-2.5-flash")
-    prompt = f"Create a very short title, no more than 4 words, for the following text: {text}"
-    response = gemini_model.generate_content(prompt)
-    return response.text.strip()
