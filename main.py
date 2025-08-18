@@ -180,7 +180,7 @@ if selected == "ChatBot":
     user_prompt = st.chat_input("Ask Aura...")
     if user_prompt:
     # Check if this is a new conversation
-    is_new_conversation = not get_conversation_history(user_id, st.session_state.session_id)
+      is_new_conversation = not get_conversation_history(user_id, st.session_state.session_id)
     
     # Display user message
     st.chat_message("user").markdown(user_prompt)
@@ -249,4 +249,5 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
+
 
