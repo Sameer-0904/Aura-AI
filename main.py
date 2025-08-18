@@ -30,6 +30,11 @@ def setup_database():
     ''')
     conn.commit()
     conn.close()
+  
+# This code block MUST be at the very top of your file after imports.
+if 'db_setup_complete' not in st.session_state:
+    setup_database()
+    st.session_state.db_setup_complete = True
 
 def save_message(user_id, session_id, role, content, title=None):
     conn = sqlite3.connect('conversations.db')
@@ -40,7 +45,7 @@ def save_message(user_id, session_id, role, content, title=None):
     )
     conn.commit()
     conn.close()
-
+  
 def get_conversation_history(user_id, session_id):
     conn = sqlite3.connect('conversations.db')
     cursor = conn.cursor()
@@ -91,10 +96,6 @@ if "user_id" not in st.session_state:
 else:
     user_id = st.session_state.user_id
 
-# This code block MUST be at the very top of your file after imports.
-if 'db_setup_complete' not in st.session_state:
-    setup_database()
-    st.session_state.db_setup_complete = True
 
 # Set custom Streamlit theme via st.markdown
 st.markdown("""
@@ -237,3 +238,4 @@ elif selected == "Ask me Anything":
             st.markdown(response)
         else:
             st.warning("Please enter a question.")
+
