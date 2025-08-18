@@ -13,28 +13,22 @@ from gemini_utility import (load_gemini_pro_model,
 from streamlit_cookies_manager import CookieManager
 
 cookies = CookieManager()
-# --- CRITICAL FIX START ---
-# This check ensures we only try to get the cookie after the component is ready
 if not cookies.ready():
     st.stop()
-
 # Get a user ID from cookies or create a new one
 if "user_id" not in st.session_state:
     try:
-        # Correct way to get a cookie
         user_id = cookies["user_id"]
     except KeyError:
-        # If the cookie doesn't exist, create a new one
         user_id = str(uuid.uuid4())
         cookies["user_id"] = user_id
         cookies.save()
     st.session_state.user_id = user_id
 else:
     user_id = st.session_state.user_id
-# --- CRITICAL FIX END ---
+
 
 # --- REFINED CODE START ---
-
 # Database functions for saving and retrieving messages
 def setup_database():
     conn = sqlite3.connect('conversations.db')
@@ -52,6 +46,13 @@ def setup_database():
     ''')
     conn.commit()
     conn.close()
+
+# --- CRITICAL FIX START ---
+# This code block MUST be at the very top of your file after imports.
+if 'db_setup_complete' not in st.session_state:
+    setup_database()
+    st.session_state.db_setup_complete = True
+# --- CRITICAL FIX END ---
 
 def save_message(user_id, session_id, role, content, title=None):
     conn = sqlite3.connect('conversations.db')
@@ -96,12 +97,6 @@ def format_history_for_gemini(db_history):
     return gemini_history
 
 # --- END OF REFINED CODE ---
-
-# This code block MUST be at the very top of your file after imports.
-if 'db_setup_complete' not in st.session_state:
-    setup_database()
-    st.session_state.db_setup_complete = True
-
 # Set custom Streamlit theme via st.markdown
 st.markdown("""
     <style>
