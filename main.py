@@ -10,6 +10,28 @@ from gemini_utility import (load_gemini_pro_model,
                             embedding_model_response,
                             aura_response,
                             generate_title)
+from streamlit_cookies_manager import CookieManager
+
+cookies = CookieManager()
+# --- CRITICAL FIX START ---
+# This check ensures we only try to get the cookie after the component is ready
+if not cookies.ready():
+    st.stop()
+
+# Get a user ID from cookies or create a new one
+if "user_id" not in st.session_state:
+    try:
+        # Correct way to get a cookie
+        user_id = cookies["user_id"]
+    except KeyError:
+        # If the cookie doesn't exist, create a new one
+        user_id = str(uuid.uuid4())
+        cookies["user_id"] = user_id
+        cookies.save()
+    st.session_state.user_id = user_id
+else:
+    user_id = st.session_state.user_id
+# --- CRITICAL FIX END ---
 
 # --- REFINED CODE START ---
 
@@ -20,6 +42,7 @@ def setup_database():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY,
+            user_id TEXT NOT NULL,
             session_id TEXT NOT NULL,
             title TEXT,
             role TEXT NOT NULL,
@@ -30,37 +53,37 @@ def setup_database():
     conn.commit()
     conn.close()
 
-def save_message(session_id, role, content, title=None):
+def save_message(user_id, session_id, role, content, title=None):
     conn = sqlite3.connect('conversations.db')
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO messages (session_id, title, role, content) VALUES (?, ?, ?, ?)",
-        (session_id, title, role, content)
+        "INSERT INTO messages (user_id, session_id, title, role, content) VALUES (?, ?, ?, ?, ?)",
+        (user_id, session_id, title, role, content)
     )
     conn.commit()
     conn.close()
 
-def get_conversation_history(session_id):
+def get_conversation_history(user_id, session_id):
     conn = sqlite3.connect('conversations.db')
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT role, content FROM messages WHERE session_id = ? ORDER BY timestamp ASC",
-        (session_id,)
+        "SELECT role, content FROM messages WHERE user_id = ? AND session_id = ? ORDER BY timestamp ASC",
+        (user_id, session_id,)
     )
     history = cursor.fetchall()
     conn.close()
     return history
 
-def get_recent_sessions():
+def get_recent_sessions(user_id):
     conn = sqlite3.connect('conversations.db')
     cursor = conn.cursor()
     cursor.execute('''
         SELECT DISTINCT session_id, title
         FROM messages
-        WHERE title IS NOT NULL
+        WHERE user_id = ? AND title IS NOT NULL
         ORDER BY timestamp DESC
         LIMIT 10;
-    ''')
+    ''', (user_id,))
     sessions = cursor.fetchall()
     conn.close()
     return sessions
@@ -108,6 +131,7 @@ st.set_page_config(
     layout="wide"
 )
 
+
 # Sidebar with menu
 with st.sidebar:
     st.markdown("<div style='text-align: center;'><h1>🧠 Aura AI</h1></div>", unsafe_allow_html=True)
@@ -122,7 +146,7 @@ with st.sidebar:
         st.session_state.session_id = str(uuid.uuid4())
         st.rerun()
 
-    recent_sessions = get_recent_sessions()
+    recent_sessions = get_recent_sessions(user_id)
     if recent_sessions:
         for session_id, title in recent_sessions:
             if st.button(title or "New Chat", key=session_id):
@@ -146,8 +170,7 @@ if selected == "ChatBot":
     st.title("🤖 Aura AI ChatBot")
     st.write("Chat with Aura AI, Your Intelligent Assistant.")
 
-    # Get conversation history from the database
-    current_conversation_db = get_conversation_history(st.session_state.session_id)
+    current_conversation_db = get_conversation_history(user_id, st.session_state.session_id)
 
     # Display conversation history
     for role, content in current_conversation_db:
@@ -157,7 +180,7 @@ if selected == "ChatBot":
     user_prompt = st.chat_input("Ask Aura...")
     if user_prompt:
         # Check if this is a new conversation
-        is_new_conversation = not get_conversation_history(st.session_state.session_id)
+        is_new_conversation = not get_conversation_history(user_id, st.session_state.session_id)
 
         # Display user message
         st.chat_message("user").markdown(user_prompt)
@@ -166,12 +189,12 @@ if selected == "ChatBot":
             # Generate and save title for new conversations
             if is_new_conversation:
                 generated_title = generate_title(user_prompt)
-                save_message(st.session_state.session_id, "user", user_prompt, title=generated_title)
+                save_message(user_id, st.session_state.session_id, "user", user_prompt, title=generated_title)
             else:
-                save_message(st.session_state.session_id, "user", user_prompt)
+                save_message(user_id, st.session_state.session_id, "user", user_prompt)
 
             # Get the full conversation history from the database
-            full_conversation = get_conversation_history(st.session_state.session_id)
+            full_conversation = get_conversation_history(user_id, st.session_state.session_id)
 
             # Start a new chat session with the full conversation history
             chat_session = model.start_chat(history=format_history_for_gemini(full_conversation))
@@ -179,7 +202,7 @@ if selected == "ChatBot":
             # Send the last user message to the model
             aura_response = chat_session.send_message(user_prompt)
 
-        save_message(st.session_state.session_id, "model", aura_response.text)
+        save_message(user_id, st.session_state.session_id, "model", aura_response.text)
 
         with st.chat_message("assistant"):
             st.markdown(aura_response.text)
@@ -225,9 +248,3 @@ elif selected == "Ask me Anything":
             st.markdown(response)
         else:
             st.warning("Please enter a question.")
-
-
-# --- Text at the bottom of every page ---
-st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
-st.markdown("---")
-st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
