@@ -12,25 +12,9 @@ from gemini_utility import (load_gemini_pro_model,
                             generate_title)
 from streamlit_cookies_manager import CookieManager
 
-cookies = CookieManager()
-if not cookies.ready():
-    st.stop()
-# Get a user ID from cookies or create a new one
-if "user_id" not in st.session_state:
-    try:
-        user_id = cookies["user_id"]
-    except KeyError:
-        user_id = str(uuid.uuid4())
-        cookies["user_id"] = user_id
-        cookies.save()
-    st.session_state.user_id = user_id
-else:
-    user_id = st.session_state.user_id
-
-
-# --- REFINED CODE START ---
-# Database functions for saving and retrieving messages
-def setup_database():
+# --- NEW ROBUST DATABASE LOGIC START ---
+@st.cache_resource
+def get_db_connection():
     conn = sqlite3.connect('conversations.db')
     cursor = conn.cursor()
     cursor.execute('''
@@ -45,38 +29,26 @@ def setup_database():
         );
     ''')
     conn.commit()
-    conn.close()
+    return conn
 
-# --- CRITICAL FIX START ---
-# This code block MUST be at the very top of your file after imports.
-if 'db_setup_complete' not in st.session_state:
-    setup_database()
-    st.session_state.db_setup_complete = True
-# --- CRITICAL FIX END ---
-
-def save_message(user_id, session_id, role, content, title=None):
-    conn = sqlite3.connect('conversations.db')
+def save_message(conn, user_id, session_id, role, content, title=None):
     cursor = conn.cursor()
     cursor.execute(
         "INSERT INTO messages (user_id, session_id, title, role, content) VALUES (?, ?, ?, ?, ?)",
         (user_id, session_id, title, role, content)
     )
     conn.commit()
-    conn.close()
 
-def get_conversation_history(user_id, session_id):
-    conn = sqlite3.connect('conversations.db')
+def get_conversation_history(conn, user_id, session_id):
     cursor = conn.cursor()
     cursor.execute(
         "SELECT role, content FROM messages WHERE user_id = ? AND session_id = ? ORDER BY timestamp ASC",
         (user_id, session_id,)
     )
     history = cursor.fetchall()
-    conn.close()
     return history
 
-def get_recent_sessions(user_id):
-    conn = sqlite3.connect('conversations.db')
+def get_recent_sessions(conn, user_id):
     cursor = conn.cursor()
     cursor.execute('''
         SELECT DISTINCT session_id, title
@@ -86,17 +58,28 @@ def get_recent_sessions(user_id):
         LIMIT 10;
     ''', (user_id,))
     sessions = cursor.fetchall()
-    conn.close()
     return sessions
 
-# Function to format database history for Gemini model
-def format_history_for_gemini(db_history):
-    gemini_history = []
-    for role, content in db_history:
-        gemini_history.append({"role": role, "parts": [content]})
-    return gemini_history
+# --- END OF NEW ROBUST DATABASE LOGIC ---
 
-# --- END OF REFINED CODE ---
+# Main app logic starts here
+conn = get_db_connection()
+
+cookies = CookieManager()
+if not cookies.ready():
+    st.stop()
+
+if "user_id" not in st.session_state:
+    try:
+        user_id = cookies["user_id"]
+    except KeyError:
+        user_id = str(uuid.uuid4())
+        cookies["user_id"] = user_id
+        cookies.save()
+    st.session_state.user_id = user_id
+else:
+    user_id = st.session_state.user_id
+
 # Set custom Streamlit theme via st.markdown
 st.markdown("""
     <style>
@@ -126,7 +109,6 @@ st.set_page_config(
     layout="wide"
 )
 
-
 # Sidebar with menu
 with st.sidebar:
     st.markdown("<div style='text-align: center;'><h1>🧠 Aura AI</h1></div>", unsafe_allow_html=True)
@@ -141,7 +123,7 @@ with st.sidebar:
         st.session_state.session_id = str(uuid.uuid4())
         st.rerun()
 
-    recent_sessions = get_recent_sessions(user_id)
+    recent_sessions = get_recent_sessions(conn, user_id)
     if recent_sessions:
         for session_id, title in recent_sessions:
             if st.button(title or "New Chat", key=session_id):
@@ -158,46 +140,36 @@ def translate_role_for_streamlit(user_role):
 if selected == "ChatBot":
     model = load_gemini_pro_model()
 
-    # Initialize a new session or load an old one
     if "session_id" not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())
 
     st.title("🤖 Aura AI ChatBot")
     st.write("Chat with Aura AI, Your Intelligent Assistant.")
 
-    current_conversation_db = get_conversation_history(user_id, st.session_state.session_id)
+    current_conversation_db = get_conversation_history(conn, user_id, st.session_state.session_id)
 
-    # Display conversation history
     for role, content in current_conversation_db:
         with st.chat_message(translate_role_for_streamlit(role)):
             st.markdown(content)
 
     user_prompt = st.chat_input("Ask Aura...")
     if user_prompt:
-        # Check if this is a new conversation
-        is_new_conversation = not get_conversation_history(user_id, st.session_state.session_id)
+        is_new_conversation = not get_conversation_history(conn, user_id, st.session_state.session_id)
 
-        # Display user message
         st.chat_message("user").markdown(user_prompt)
 
         with st.spinner("Thinking..."):
-            # Generate and save title for new conversations
             if is_new_conversation:
                 generated_title = generate_title(user_prompt)
-                save_message(user_id, st.session_state.session_id, "user", user_prompt, title=generated_title)
+                save_message(conn, user_id, st.session_state.session_id, "user", user_prompt, title=generated_title)
             else:
-                save_message(user_id, st.session_state.session_id, "user", user_prompt)
+                save_message(conn, user_id, st.session_state.session_id, "user", user_prompt)
 
-            # Get the full conversation history from the database
-            full_conversation = get_conversation_history(user_id, st.session_state.session_id)
-
-            # Start a new chat session with the full conversation history
+            full_conversation = get_conversation_history(conn, user_id, st.session_state.session_id)
             chat_session = model.start_chat(history=format_history_for_gemini(full_conversation))
-
-            # Send the last user message to the model
             aura_response = chat_session.send_message(user_prompt)
 
-        save_message(user_id, st.session_state.session_id, "model", aura_response.text)
+        save_message(conn, user_id, st.session_state.session_id, "model", aura_response.text)
 
         with st.chat_message("assistant"):
             st.markdown(aura_response.text)
