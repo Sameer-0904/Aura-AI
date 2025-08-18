@@ -39,3 +39,10 @@ def aura_response(user_prompt):
     response = gemini_pro_model.generate_content(user_prompt)
     result = response.text
     return result
+
+# Function to generate a title using the Gemini model
+def generate_title(text):
+    gemini_model = genai.GenerativeModel("gemini-2.5-flash")
+    prompt = f"Create a very short title, no more than 4 words, for the following text: {text}"
+    response = gemini_model.generate_content(prompt)
+    return response.text.strip()
