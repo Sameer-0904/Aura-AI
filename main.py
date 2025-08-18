@@ -8,8 +8,7 @@ from streamlit_option_menu import option_menu
 from gemini_utility import (load_gemini_pro_model,
                             aura_vision_response,
                             embedding_model_response,
-                            aura_response,
-                            generate_title)
+                            aura_response)
 
 # --- REFINED CODE START ---
 
@@ -225,3 +224,4 @@ elif selected == "Ask me Anything":
             st.markdown(response)
         else:
             st.warning("Please enter a question.")
+
