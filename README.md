@@ -1,4 +1,4 @@
-# 🌟 Introducing Aura AI — Powered by Gemini 2.5 Flash  
+# 🌟 Introducing Aura AI — Your Personal AI Playground  
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)  
 [![Gemini](https://img.shields.io/badge/Google-Gemini%202.5%20Flash-red?logo=google)](https://ai.google.dev/)  
@@ -31,5 +31,21 @@ The app is lightweight, modular, and can be extended into a **full-scale AI assi
 - **Model**: [Gemini 2.5 Flash](https://ai.google.dev/)  
 - **Frameworks**: Streamlit  
 - **Libraries**: `google-generativeai`, `PIL`, `numpy`, 
+
+---
+
+---
+
+## 📝 Chat History
+
+Aura AI now supports **chat history** 🗨️.  
+The app automatically stores the **last 10 messages** in each session, so you can continue conversations with context.  
+
+### Benefits:
+- 🔄 Keeps track of ongoing discussions  
+- 🧠 More natural and human-like interactions  
+- ⏪ Lets you refer back to previous questions/answers  
+
+> Currently, the history is stored in-memory (session-based). Future updates may include saving history to a database for long-term memory.
 
 ---
