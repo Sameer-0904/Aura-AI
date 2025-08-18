@@ -13,8 +13,8 @@ from gemini_utility import (load_gemini_pro_model,
 from streamlit_cookies_manager import CookieManager
 
 # --- NEW ROBUST DATABASE LOGIC START ---
-@st.cache_resource
-def get_db_connection():
+# Database functions for saving and retrieving messages
+def setup_database():
     conn = sqlite3.connect('conversations.db')
     cursor = conn.cursor()
     cursor.execute('''
@@ -29,26 +29,31 @@ def get_db_connection():
         );
     ''')
     conn.commit()
-    return conn
+    conn.close()
 
-def save_message(conn, user_id, session_id, role, content, title=None):
+def save_message(user_id, session_id, role, content, title=None):
+    conn = sqlite3.connect('conversations.db')
     cursor = conn.cursor()
     cursor.execute(
         "INSERT INTO messages (user_id, session_id, title, role, content) VALUES (?, ?, ?, ?, ?)",
         (user_id, session_id, title, role, content)
     )
     conn.commit()
+    conn.close()
 
-def get_conversation_history(conn, user_id, session_id):
+def get_conversation_history(user_id, session_id):
+    conn = sqlite3.connect('conversations.db')
     cursor = conn.cursor()
     cursor.execute(
         "SELECT role, content FROM messages WHERE user_id = ? AND session_id = ? ORDER BY timestamp ASC",
         (user_id, session_id,)
     )
     history = cursor.fetchall()
+    conn.close()
     return history
 
-def get_recent_sessions(conn, user_id):
+def get_recent_sessions(user_id):
+    conn = sqlite3.connect('conversations.db')
     cursor = conn.cursor()
     cursor.execute('''
         SELECT DISTINCT session_id, title
@@ -58,13 +63,19 @@ def get_recent_sessions(conn, user_id):
         LIMIT 10;
     ''', (user_id,))
     sessions = cursor.fetchall()
+    conn.close()
     return sessions
+
+# Function to format database history for Gemini model
+def format_history_for_gemini(db_history):
+    gemini_history = []
+    for role, content in db_history:
+        gemini_history.append({"role": role, "parts": [content]})
+    return gemini_history
 
 # --- END OF NEW ROBUST DATABASE LOGIC ---
 
 # Main app logic starts here
-conn = get_db_connection()
-
 cookies = CookieManager()
 if not cookies.ready():
     st.stop()
@@ -79,6 +90,11 @@ if "user_id" not in st.session_state:
     st.session_state.user_id = user_id
 else:
     user_id = st.session_state.user_id
+
+# This code block MUST be at the very top of your file after imports.
+if 'db_setup_complete' not in st.session_state:
+    setup_database()
+    st.session_state.db_setup_complete = True
 
 # Set custom Streamlit theme via st.markdown
 st.markdown("""
@@ -120,14 +136,19 @@ with st.sidebar:
 
     st.header("Recent Conversations")
     if st.button("➕ New Chat"):
-        st.session_state.session_id = str(uuid.uuid4())
+        if 'session_id' in st.session_state:
+            del st.session_state.session_id
+        if 'chat_session' in st.session_state:
+            del st.session_state.chat_session
         st.rerun()
 
-    recent_sessions = get_recent_sessions(conn, user_id)
+    recent_sessions = get_recent_sessions(user_id)
     if recent_sessions:
         for session_id, title in recent_sessions:
             if st.button(title or "New Chat", key=session_id):
                 st.session_state.session_id = session_id
+                if 'chat_session' in st.session_state:
+                    del st.session_state.chat_session
                 st.rerun()
     st.markdown("---")
     st.markdown("<div style='text-align: center;'><span style='font-size: 16px; color: gray;'>Your Personal LLM Assistant</span></div>", unsafe_allow_html=True)
@@ -143,33 +164,34 @@ if selected == "ChatBot":
     if "session_id" not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())
 
+    if "chat_session" not in st.session_state:
+        current_conversation_db = get_conversation_history(user_id, st.session_state.session_id)
+        formatted_history = format_history_for_gemini(current_conversation_db)
+        st.session_state.chat_session = model.start_chat(history=formatted_history)
+
     st.title("🤖 Aura AI ChatBot")
     st.write("Chat with Aura AI, Your Intelligent Assistant.")
 
-    current_conversation_db = get_conversation_history(conn, user_id, st.session_state.session_id)
-
-    for role, content in current_conversation_db:
-        with st.chat_message(translate_role_for_streamlit(role)):
-            st.markdown(content)
+    for message in st.session_state.chat_session.history:
+        with st.chat_message(translate_role_for_streamlit(message.role)):
+            st.markdown(message.parts[0].text)
 
     user_prompt = st.chat_input("Ask Aura...")
     if user_prompt:
-        is_new_conversation = not get_conversation_history(conn, user_id, st.session_state.session_id)
+        is_new_conversation = not get_conversation_history(user_id, st.session_state.session_id)
 
         st.chat_message("user").markdown(user_prompt)
 
         with st.spinner("Thinking..."):
             if is_new_conversation:
                 generated_title = generate_title(user_prompt)
-                save_message(conn, user_id, st.session_state.session_id, "user", user_prompt, title=generated_title)
+                save_message(user_id, st.session_state.session_id, "user", user_prompt, title=generated_title)
             else:
-                save_message(conn, user_id, st.session_state.session_id, "user", user_prompt)
+                save_message(user_id, st.session_state.session_id, "user", user_prompt)
 
-            full_conversation = get_conversation_history(conn, user_id, st.session_state.session_id)
-            chat_session = model.start_chat(history=format_history_for_gemini(full_conversation))
-            aura_response = chat_session.send_message(user_prompt)
+            aura_response = st.session_state.chat_session.send_message(user_prompt)
 
-        save_message(conn, user_id, st.session_state.session_id, "model", aura_response.text)
+        save_message(user_id, st.session_state.session_id, "model", aura_response.text)
 
         with st.chat_message("assistant"):
             st.markdown(aura_response.text)
