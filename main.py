@@ -179,28 +179,25 @@ if selected == "ChatBot":
 
     user_prompt = st.chat_input("Ask Aura...")
     if user_prompt:
-    # Check if this is a new conversation
-      is_new_conversation = not get_conversation_history(user_id, st.session_state.session_id)
-    
-    # Display user message
-    st.chat_message("user").markdown(user_prompt)
-
-    with st.spinner("Thinking..."):
-        # Generate and save title for new conversations (in the background)
-        if is_new_conversation:
-            generated_title = generate_title(user_prompt)
-            save_message(user_id, st.session_state.session_id, "user", user_prompt, title=generated_title)
-        else:
-            save_message(user_id, st.session_state.session_id, "user", user_prompt)
+        # This is where the variable is defined, and all the code that uses it
+        # should be inside this block.
+        is_new_conversation = not get_conversation_history(user_id, st.session_state.session_id)
         
-        # Send the message to the existing chat session
-        aura_response = st.session_state.chat_session.send_message(user_prompt)
+        st.chat_message("user").markdown(user_prompt)
 
-    # Save assistant message to the database
-    save_message(user_id, st.session_state.session_id, "model", aura_response.text)
-    
-    with st.chat_message("assistant"):
-        st.markdown(aura_response.text)
+        with st.spinner("Thinking..."):
+            if is_new_conversation:
+                generated_title = generate_title(user_prompt)
+                save_message(user_id, st.session_state.session_id, "user", user_prompt, title=generated_title)
+            else:
+                save_message(user_id, st.session_state.session_id, "user", user_prompt)
+            
+            aura_response = st.session_state.chat_session.send_message(user_prompt)
+
+        save_message(user_id, st.session_state.session_id, "model", aura_response.text)
+        
+        with st.chat_message("assistant"):
+            st.markdown(aura_response.text)
 
 # Image Captioning Page
 elif selected == "Image Captioning":
@@ -249,5 +246,6 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
+
 
 
