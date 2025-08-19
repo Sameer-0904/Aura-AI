@@ -162,26 +162,25 @@ def translate_role_for_streamlit(user_role):
 # ChatBot Page
 if selected == "ChatBot":
     model = load_gemini_pro_model()
-
+    
+    # Initialize a new session or load an old one
     if "session_id" not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())
-
-    if "chat_session" not in st.session_state:
-        current_conversation_db = get_conversation_history(user_id, st.session_state.session_id)
-        formatted_history = format_history_for_gemini(current_conversation_db)
-        st.session_state.chat_session = model.start_chat(history=formatted_history)
-
+    
     st.title("🤖 Aura AI ChatBot")
     st.write("Chat with Aura AI, Your Intelligent Assistant.")
 
-    for message in st.session_state.chat_session.history:
-        with st.chat_message(translate_role_for_streamlit(message.role)):
-            st.markdown(message.parts[0].text)
-
+    # Get and display the full conversation history from the database
+    full_conversation = get_conversation_history(user_id, st.session_state.session_id)
+    for role, content in full_conversation:
+        with st.chat_message(translate_role_for_streamlit(role)):
+            st.markdown(content)
+    
     user_prompt = st.chat_input("Ask Aura...")
     if user_prompt:
-        is_new_conversation = not get_conversation_history(user_id, st.session_state.session_id)
-
+        is_new_conversation = not full_conversation
+        
+        # Display the user message immediately
         st.chat_message("user").markdown(user_prompt)
 
         with st.spinner("Thinking..."):
@@ -191,18 +190,26 @@ if selected == "ChatBot":
             else:
                 save_message(user_id, st.session_state.session_id, "user", user_prompt)
             
-            streamed_response = aura_response_stream(user_prompt)
+            # Format the full conversation for the model
+            formatted_history = format_history_for_gemini(full_conversation)
             
-            full_response = ""
+            # Add the current user prompt to the history for the API call
+            formatted_history.append({"role": "user", "parts": [user_prompt]})
+            
+            # Use generate_content with the full history and stream=True
+            streamed_response = model.generate_content(formatted_history, stream=True)
+            
+            # Use a new message container for the assistant's streamed response
             with st.chat_message("assistant"):
+                full_response = ""
                 message_placeholder = st.empty()
                 for chunk in streamed_response:
                     full_response += chunk.text
                     message_placeholder.markdown(full_response + "▌")
                 
                 message_placeholder.markdown(full_response)
-            
-            save_message(user_id, st.session_state.session_id, "model", full_response)
+        
+        save_message(user_id, st.session_state.session_id, "model", full_response)
 
 # Image Captioning Page
 elif selected == "Image Captioning":
@@ -251,6 +258,7 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
+
 
 
 
