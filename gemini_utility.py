@@ -31,11 +31,18 @@ def embedding_model_response(input_text):
     embedding_list = embedding["embedding"]
     return embedding_list
 
+# Function to get a non-streamed response
 def aura_response(user_prompt):
     gemini_pro_model = genai.GenerativeModel("gemini-2.5-flash")
     response = gemini_pro_model.generate_content(user_prompt)
     result = response.text
     return result
+
+# Function to get a streamed response
+def aura_response_stream(user_prompt):
+    gemini_pro_model = genai.GenerativeModel("gemini-2.5-flash")
+    response = gemini_pro_model.generate_content(user_prompt, stream=True)
+    return response
 
 @st.cache_resource(ttl=3600)
 def generate_title(text):
