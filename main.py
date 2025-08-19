@@ -191,7 +191,6 @@ if selected == "ChatBot":
             else:
                 save_message(user_id, st.session_state.session_id, "user", user_prompt)
             
-            # --- START OF FIX ---
             streamed_response = aura_response_stream(user_prompt)
             
             full_response = ""
@@ -202,13 +201,8 @@ if selected == "ChatBot":
                     message_placeholder.markdown(full_response + "▌")
                 
                 message_placeholder.markdown(full_response)
-            # --- END OF FIX ---
             
-            # Save the complete response to the database
             save_message(user_id, st.session_state.session_id, "model", full_response)
-        
-        with st.chat_message("assistant"):
-            st.markdown(aura_response.text)
 
 # Image Captioning Page
 elif selected == "Image Captioning":
@@ -257,6 +251,7 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
+
 
 
 
