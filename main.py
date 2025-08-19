@@ -159,30 +159,27 @@ def translate_role_for_streamlit(user_role):
     return "assistant" if user_role == "model" else user_role
 
 # ChatBot Page
-if selected == "ChatBot":
+elif selected == "ChatBot":
     model = load_gemini_pro_model()
-
+    
+    # Initialize a new session or load an old one
     if "session_id" not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())
-
-    if "chat_session" not in st.session_state:
-        current_conversation_db = get_conversation_history(user_id, st.session_state.session_id)
-        formatted_history = format_history_for_gemini(current_conversation_db)
-        st.session_state.chat_session = model.start_chat(history=formatted_history)
-
+    
     st.title("🤖 Aura AI ChatBot")
     st.write("Chat with Aura AI, Your Intelligent Assistant.")
 
-    for message in st.session_state.chat_session.history:
-        with st.chat_message(translate_role_for_streamlit(message.role)):
-            st.markdown(message.parts[0].text)
-
+    # Get and display the full conversation history
+    full_conversation = get_conversation_history(user_id, st.session_state.session_id)
+    for role, content in full_conversation:
+        with st.chat_message(translate_role_for_streamlit(role)):
+            st.markdown(content)
+    
     user_prompt = st.chat_input("Ask Aura...")
     if user_prompt:
-        # This is where the variable is defined, and all the code that uses it
-        # should be inside this block.
-        is_new_conversation = not get_conversation_history(user_id, st.session_state.session_id)
+        is_new_conversation = not full_conversation
         
+        # Display the user message immediately
         st.chat_message("user").markdown(user_prompt)
 
         with st.spinner("Thinking..."):
@@ -192,9 +189,21 @@ if selected == "ChatBot":
             else:
                 save_message(user_id, st.session_state.session_id, "user", user_prompt)
             
-            aura_response = st.session_state.chat_session.send_message(user_prompt)
+            # Format the full conversation for the model
+            formatted_history = format_history_for_gemini(full_conversation)
+            
+            # Add the current user prompt to the history for the API call
+            formatted_history.append({"role": "user", "parts": [user_prompt]})
+            
+            # Use generate_content with the full history and stream=True
+            streamed_response = model.generate_content(formatted_history, stream=True)
+            
+            # Use st.write_stream to display the streaming response
+            with st.chat_message("assistant"):
+                full_response = st.write_stream(streamed_response)
 
-        save_message(user_id, st.session_state.session_id, "model", aura_response.text)
+        # Save the complete response to the database
+        save_message(user_id, st.session_state.session_id, "model", full_response)
         
         with st.chat_message("assistant"):
             st.markdown(aura_response.text)
@@ -246,6 +255,7 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
+
 
 
 
