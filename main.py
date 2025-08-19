@@ -159,7 +159,7 @@ def translate_role_for_streamlit(user_role):
     return "assistant" if user_role == "model" else user_role
 
 # ChatBot Page
-elif selected == "ChatBot":
+if selected == "ChatBot":
     model = load_gemini_pro_model()
     
     # Initialize a new session or load an old one
@@ -255,6 +255,7 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
+
 
 
 
