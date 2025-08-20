@@ -122,7 +122,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.set_page_config(
-    page_title="Aura AI",
+    page_title="Aura AI - by Sameer Prajapati",
     page_icon="🧠",
     layout="wide"
 )
@@ -258,6 +258,7 @@ elif selected == "Ask me Anything":
 st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True) # Add some space
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Developed by Sameer Prajapati</p>", unsafe_allow_html=True)
+
 
 
 
